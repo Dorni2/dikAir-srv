@@ -42,7 +42,10 @@ db.once('open', function() {
 });
 
 module.exports = {
-    userModel
+    userModel,
+    flightModel,
+    bookingModel,
+    cityModel
 }
 
 
