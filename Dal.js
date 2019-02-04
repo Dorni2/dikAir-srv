@@ -15,7 +15,7 @@ var userSchema = new mongoose.Schema({
 
 var citySchema = new mongoose.Schema({
     id: Number, 
-    name: String, 
+    name: String
 })
 var flightSchema = new mongoose.Schema({
     id: Number,

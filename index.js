@@ -127,6 +127,23 @@ flightRouter.route('/')
     })
 })
 
+flightRouter.route('/stats')
+.get((req, res) => {
+    Dal.flightModel.aggregate([
+        // {
+        //     $unwind: "$items"
+        // },
+        {
+            $group: {
+                _id: "$destinationId",
+                count: { $sum: 1 }
+            }
+        }
+    ], (err, flights) => {
+        res.json(flights)
+    })
+})
+
 flightRouter.route('/new/:flightNumber&:originId&:destinationId&:price')
 .get((req, res) => {
     Dal.flightModel.find({}, (err, flights) => {
@@ -153,6 +170,13 @@ flightRouter.route('/new/:flightNumber&:originId&:destinationId&:price')
             res.json(flight);
         })
     })
+})
+
+flightRouter.route('/delete/:id')
+.get((req, res) => {
+    Dal.flightModel.deleteOne({id:req.params.id}, (err, deletedCount) => {
+        res.json(deletedCount['n']);
+    });
 })
 
 // =======END_FLIGHT=======
@@ -195,8 +219,10 @@ cityRouter.route('/new/:name')
 cityRouter.route('/:CityId')
 .get((req, res) => {
     Dal.cityModel.findOne({id: req.params.CityId}, (err, user) => {
-        if(err)
-            res.statusCode(500).send(err)
+        if(err){
+            res.status = 500;
+            res.send(err);
+        }
         else {
             res.json(user);
         }
