@@ -11,6 +11,21 @@ let socketPort = 3001;
 let socketIO = require('socket.io');
 let io = socketIO(server);
 
+const AhoCorasick = require('ahocorasick');
+
+//========twitter=====
+const Twitter = require('twitter');
+var twitterClient = new Twitter({
+    consumer_key: 'rtenIb8G3RvRDbKn12ry1O0lG',
+    consumer_secret: 'TJQs8oA1CwsGSWVzywu0VQzDyqlywdvktpI5qw49qRHJBGJDB4',
+    access_token_key: '878276697044525056-v81JZ3MMuD2BjCGVMBWLXW7Ava2L2Gv',
+    access_token_secret: 'BDrh5kSTQDHwANgTuL5rxhGGwqJ4loZthAtnXVanKGJlj'
+  });
+
+  var params = {screen_name: 'nodejs', count: 100};
+
+//========END twitter=====
+
 // Add headers
 app.use(function (req, res, next) {
 
@@ -30,6 +45,89 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
+
+
+//=========download for routing tweets============
+
+app.get('/download', function (req, res) {
+    console.log('download');
+    var allScrapes = "";
+
+    twitterClient.get('statuses/user_timeline', params, function (error, tweets, response) {
+      if (error) throw error;
+        tweets.forEach(element => {
+            var someScrape = new Dal.scrapingModel({
+                source_id: "" + element.id,
+                text: element.text,
+                user: element.user.screen_name,
+                created_at: element.created_at
+            })
+            someScrape.save(function (err, scrape) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    var str;
+                    try {
+                        str = JSON.parse(scrape)
+                    } catch (error) {
+                        str = " ";
+                    }
+                    allScrapes += str;
+                }
+            })
+        });  
+      
+    })
+
+    res.json(allScrapes);
+})
+
+//=========download for routing tweets============
+
+
+//=========route for searching tweets============
+
+app.get('/search/:keyword', function (req, res) {
+    var words = [];
+    var word = req.params.keyword;
+    words.push(word);
+    var ac = new AhoCorasick(words);
+    var matches = [];
+  
+
+    Dal.scrapingModel.find({}, (err, dbRes) => {
+        if (err) throw err;
+       
+        dbRes.forEach(tweet => {
+
+          var results = ac.search(tweet.text);
+
+          if (results.length > 0) {
+            matches.push({tweet: tweet, matches: results});
+            console.log(matches);
+          }
+        });
+        res.send(matches);
+    })
+
+
+    // Dal.scrapingModel.find().toArray(function (err, dbRes) {
+    //     if (err) throw err;
+
+    //     var matches = [];
+    //     dbRes.forEach(tweet => {
+    //       var results = ac.search(tweet.text);
+    //       if (results.length > 0) {
+    //         matches.push({tweet: tweet, matches: results});
+    //       }
+    //     });
+        
+})
+
+//=========route for searching tweets============
+
+
+
 
 app.get('/', (req, res) => res.send('Hello World!'))
 
@@ -383,4 +481,4 @@ server.listen(socketPort, () => {
     console.log(`started on port: ${socketPort}`);
 });
 
-// =======END_CHAT=======
+// =======END_CHAT======

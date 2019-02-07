@@ -31,10 +31,18 @@ var bookingSchema = new mongoose.Schema({
     seats: Number, 
     totalPrice: Number
 })
+var scrapingSchema = new mongoose.Schema({
+    source_id: String,
+    text: String,
+    user: String,
+    created_at: String
+})
+
 var userModel = mongoose.model('user', userSchema);
 var cityModel = mongoose.model('city', citySchema);
 var flightModel = mongoose.model('flight', flightSchema);
 var bookingModel = mongoose.model('booking', bookingSchema);
+var scrapingModel = mongoose.model('scraper', scrapingSchema);
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
   // we're connected!
@@ -45,7 +53,8 @@ module.exports = {
     userModel,
     flightModel,
     bookingModel,
-    cityModel
+    cityModel,
+    scrapingModel
 }
 
 
