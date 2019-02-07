@@ -179,6 +179,31 @@ flightRouter.route('/delete/:id')
     });
 })
 
+flightRouter.route('/:fligthId')
+.get((req, res) => {
+    Dal.flightModel.findOne({id: req.params.fligthId}, (err, flight) => {
+        if(err){
+            res.status = 500;
+            res.send(err);
+        }
+        else {
+            res.json(flight);
+        }
+    })
+})
+
+flightRouter.route('/update/:id&:number&:price')
+.get((req, res) => {
+    Dal.flightModel.updateOne({id: req.params.id}, {flightNumber: req.params.number, price: req.params.price}, {upsert:true}, (err, flight) => {
+        if (err) {
+            res.statusCode = 500;
+            res.send(err);
+        } else {
+            res.json(flight);
+        }
+    })
+})
+
 // =======END_FLIGHT=======
 
 // =======CITY=======
@@ -190,6 +215,17 @@ cityRouter.route('/')
     })
 })
 
+cityRouter.route('/update/:id&:name')
+.get((req, res) => {
+    Dal.cityModel.updateOne({id: req.params.id}, {name: req.params.name}, {upsert:true}, (err, city) => {
+        if (err) {
+            res.statusCode = 500;
+            res.send(err);
+        } else {
+            res.json(city);
+        }
+    })
+})
 
 cityRouter.route('/new/:name')
 .get((req, res) => {
@@ -229,6 +265,13 @@ cityRouter.route('/:CityId')
     })
 })
 
+cityRouter.route('/delete/:id')
+.get((req, res) => {
+    Dal.cityModel.deleteOne({id:req.params.id}, (err, deletedCount) => {
+        res.json(deletedCount['n']);
+    });
+})
+
 // =======END_CITY=======
 
 // =======BOOKING=======
@@ -242,7 +285,7 @@ bookingRouter.route('/')
 })
 
 
-bookingRouter.route('/new/:userId&:flightId&:seats&:totalPrice')
+bookingRouter.route('/new/:userId&:flightId&:totalPrice')
 .get((req, res) => {
     Dal.bookingModel.find({}, (err, bookings) => {
         var max = 0;
@@ -257,7 +300,7 @@ bookingRouter.route('/new/:userId&:flightId&:seats&:totalPrice')
         id: (max+1),
         userId: req.params.userId,
         flightId: req.params.flightId,
-        seats: req.params.seats,
+        seats: 1,
         totalPrice: req.params.totalPrice
         })
         someBooking.save(function (err, booking) {
@@ -283,6 +326,18 @@ bookingRouter.route('/:bookingId')
     })
 })
 
+bookingRouter.route('/bookByUser/:userId')
+.get((req, res) => {
+    Dal.bookingModel.find({userId: req.params.userId}, (err, bookings) => {
+        if(err){
+            res.statusCode(500);
+            res.json(err);
+        }
+        else {
+            res.json(bookings);
+        }
+    })
+})
 
 // =======END_BOOKING=======
 
