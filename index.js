@@ -326,6 +326,19 @@ bookingRouter.route('/:bookingId')
     })
 })
 
+bookingRouter.route('/delete/:bookingId')
+.get((req, res) => {
+    Dal.bookingModel.deleteOne({id: req.params.bookingId}, (err, deleteConf) => {
+        if(err){
+            res.statusCode(500);
+            res.json(err);
+        }
+        else {
+            res.json(deleteConf);
+        }
+    })
+})
+
 bookingRouter.route('/bookByUser/:userId')
 .get((req, res) => {
     Dal.bookingModel.find({userId: req.params.userId}, (err, bookings) => {
@@ -353,6 +366,16 @@ io.on('connection', (socket) => {
     socket.on('new-message', (message) => {
         console.log(message);
         io.emit('new-message', message);
+      });
+
+      socket.on('new-order', (order) => {
+        console.log(order);
+        io.emit('new-order', order);
+      });
+
+      socket.on('delete-order', (order) => {
+          console.log(order);
+          io.emit('delete-order', order);
       });
 });
 
